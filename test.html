@@ -1,0 +1,174 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+canvas {
+  border:1px solid #d3d3d3;
+  background-color: #f1f1f1;
+}
+html, body {
+	width: 100%;
+    height: 100%;
+    margin: 0px;
+    border: 0;
+    overflow: hidden;
+    display: block;
+}
+</style>
+</head>
+<body onload="test()">
+<script src="../../libraries/Utilities.js"></script>
+<script src="../../libraries/ByteHelper.js"></script>
+<script src="../../libraries/BitHelper.js"></script>
+<script src="../../libraries/Random.js"></script>
+<script src="../../libraries/Hasher.js"></script>
+<script src="../../libraries/Images.js"></script>
+<script src="../../libraries/WebClient.js"></script>
+<script src="../../libraries/Gui.js"></script>
+<script src="../../libraries/Gui3D.js"></script>
+<script src="../../libraries/MathHelper.js"></script>
+<script>
+function test(){
+
+	const model = new Gui3D.ModelBuilder();
+
+	//positive Z
+	model.addFourangle(-1,-1,1,0,0,0, 1,-1,1,5,0,0, 1,1,1,5,5,0, -1,1,1,0,5,0);
+	//positive X
+	model.addFourangle(1,-1,-1,6,0,0, 1,-1,1,11,0,0, 1,1,1,11,5,0, 1,1,-1,6,5,0);
+	//negative Z
+	model.addFourangle(-1,-1,-1,12,0,0, 1,-1,-1,17,0,0, 1,1,-1,17,5,0, -1,1,-1,12,5,0);
+	//negative X
+	model.addFourangle(-1,-1,-1,18,0,0, -1,-1,1,23,0,0, -1,1,1,23,5,0, -1,1,-1,18,5,0);
+	//positive Y
+	model.addFourangle(-1,1,-1,24,0,0, 1,1,-1,29,0,0, 1,1,1,29,5,0, -1,1,1,24,5,0);
+	//negative Y
+	model.addFourangle(-1,-1,-1,30,0,0, 1,-1,-1,35,0,0, 1,-1,1,35,5,0, -1,-1,1,30,5,0);
+
+	const texture = model.testModel.texture;
+	texture.addSpaceRight(4);
+	texture.addSpaceUp(4);
+	texture.fill(0, 0, 5, 5, 100, 100, 200);
+	texture.fill(6, 0, 11, 5, 200, 100, 100);
+	texture.fill(12, 0, 17, 5, 100, 100, 0);
+	texture.fill(18, 0, 23, 5, 0, 100, 100);
+	texture.fill(24, 0, 29, 5, 100, 200, 100);
+	texture.fill(30, 0, 35, 5, 100, 0, 100);
+
+	const skeleton = model.testModel.skeleton;
+	model.addSkeletonPart(new Gui3D.SkeletonPart(-1, 0, 0, 0, 0, 0, 0, new Gui3D.NoAnimation()));
+	skeleton.setState({});
+	
+	const entityModel = new Gui3D.Model(model, texture, skeleton);
+	
+	const renderer = new Gui.CanvasRenderer();
+	renderer.start();
+	
+	let yaw = 0;
+	let pitch = 0;
+	let x = 0;
+	let y = 0;
+
+	let cameraMatrix = undefined;
+
+	let selectedVertexIndex = 0;
+
+	const inverval = setInterval(function(){
+		cameraMatrix = Matrices.createCameraMatrix(70, 0.01, 100, 800, 800, x, y, 5, pitch, yaw, 0);
+		renderer.clear('rgb(150,0,150)');
+		renderer.fillRect('rgb(0, 100,150)', 0.2, 0.2, 0.8, 0.8);
+		//const startTime = performance.now();
+		renderer.renderModels(0.2, 0.2, 0.8, 0.8, cameraMatrix, [entityModel]);
+		//const endTime = performance.now();
+		//console.log('Rendering took ' + (endTime - startTime) + ' ms');
+	}, 100);
+
+	window.addEventListener('keydown', function(event){
+		if(event.key === 'a'){
+			if(event.altKey)
+				model.positions[selectedVertexIndex * 3]--;
+			else
+				x -= 0.1;
+		}
+		if(event.key === 'd'){
+			if(event.altKey)
+				model.positions[selectedVertexIndex * 3]++;
+			else
+				x += 0.1;
+		}
+		if(event.key === 'w'){
+			if(event.altKey)
+				model.positions[selectedVertexIndex * 3 + 1]++;
+			else
+				y += 0.1;
+		}
+		if(event.key === 's'){
+			if(event.altKey)
+				model.positions[selectedVertexIndex * 3 + 1]--;
+			else
+				y -= 0.1;
+		}
+		if(event.key === 'r'){
+			yaw = 0;
+			pitch = 0;
+		}
+		if(event.key === 't'){
+			console.log('Average time for part 1 is ' + (totalTime1 / totalTicks));
+			console.log('Average time for part 2 is ' + (totalTime2 / totalTicks));
+		}
+		if(event.key === 'j'){
+			skeleton.parts[0].x -= 0.1;
+			skeleton.setState();
+		}
+		if(event.key === 'l'){
+			skeleton.parts[0].x += 0.1;
+			skeleton.setState();
+		}
+		if(event.key === 'i'){
+			skeleton.parts[0].y += 0.1;
+			skeleton.setState();
+		}
+		if(event.key === 'k'){
+			skeleton.parts[0].y -= 0.1;
+			skeleton.setState();
+		}
+		if(event.key === 'ArrowLeft'){
+			if(event.altKey){
+				if(selectedVertexIndex > 0)
+					selectedVertexIndex--;
+				else
+					selectedVertexIndex = model.positions.length / 3 - 1;
+			}
+		}
+		if(event.key === 'ArrowRight'){
+			if(event.altKey){
+				if(selectedVertexIndex < model.positions.length / 3 - 1)
+					selectedVertexIndex++;
+				else
+					selectedVertexIndex = 0;
+			}
+		}
+	});
+	window.addEventListener('mousemove', function(event){
+		if(event.altKey){
+			skeleton.parts[0].yaw += event.movementX * 0.3;
+			skeleton.parts[0].pitch += event.movementY * 0.3;
+			skeleton.setState();
+		}
+		else {
+			yaw += event.movementX * 0.3;
+			pitch += event.movementY * 0.3;
+		}
+	});
+	
+	/*
+	about the Z-coordinate:
+	z = 1 means that the vertex is at the far plane of the cameraMatrix
+	z = 0 is a bit unclear, but it means the vertex is close to 2 * nearPlane
+	z = -1 means that the vertex is at the near plane of the camera
+	*/
+}
+</script>
+</body>
+</html>

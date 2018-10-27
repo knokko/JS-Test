@@ -1,0 +1,179 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+</head>
+<body onload="doTests();">
+	<script>
+
+		const tests = 100000;
+		let input = new Array(tests * 12);
+
+		function doTests(){
+			for(let index = 0; index < input.length; index++){
+				input[index] = Math.random();
+			}
+			testReuseArray();
+			testArray();
+			testReuseConstructor();
+			testConstructor();
+
+			let array = 0;
+			let reuseArray = 0;
+			let constructor = 0;
+			let reuseConstructor = 0;
+
+			function increaseConstructor(){
+				constructor += testConstructor();
+			}
+
+			function increaseArray(){
+				array += testArray();
+			}
+
+			function increaseReuseConstructor(){
+				reuseConstructor += testReuseConstructor();
+			}
+
+			function increaseReuseArray(){
+				reuseArray += testReuseArray();
+			}
+
+			const increaseFunctions = [increaseConstructor, increaseArray, increaseReuseConstructor, increaseReuseArray];
+
+			const orders = [
+			3,0,1,2, 3,0,2,1, 3,1,0,2, 3,1,2,0, 3,2,0,1, 3,2,1,0,
+			2,0,1,3, 2,0,3,1, 2,1,0,3, 2,1,3,0, 2,3,0,1, 2,3,1,0,
+			0,1,2,3, 0,1,3,2, 0,2,1,3, 0,2,3,1, 0,3,1,2, 0,3,2,1,
+			1,0,2,3, 1,0,3,2, 1,2,0,3, 1,2,3,0, 1,3,0,2, 1,3,2,0
+			];
+
+			console.log('warmup complete');
+
+			for(let index = 0; index < orders.length; index++){
+				increaseFunctions[orders[index]]();
+			}
+
+			console.log('constructor: ' + constructor);
+			console.log('reuse constructor: ' + reuseConstructor);
+			console.log('array: ' + array);
+			console.log('reuseArray: ' + reuseArray);
+		}
+
+		function testConstructor(){
+			const results = new Array(tests);
+			const startTime = performance.now();
+			let inputIndex = 0;
+			for(let counter = 0; counter < tests; counter++){
+				const rect = new Rectangle(input[inputIndex++], input[inputIndex++], input[inputIndex++], input[inputIndex++], input[inputIndex++], input[inputIndex++], input[inputIndex++], input[inputIndex++]);
+				const x = input[inputIndex++];
+				const y = input[inputIndex++];
+				const z = input[inputIndex++];
+				const w = input[inputIndex++];
+				if(x >= rect.minX && x <= rect.maxX && y >= rect.minY && y <= rect.maxY && z >= rect.minZ && z <= rect.maxZ && w >= rect.minW && w <= rect.maxW)
+					results[counter] = true;
+				else
+					results[counter] = false;
+			}
+			const endTime = performance.now();
+			return endTime - startTime;
+		}
+
+		function Rectangle(minX, minY, minZ, minW, maxX, maxY, maxZ, maxW){
+			this.minX = minX;
+			this.minY = minY;
+			this.minZ = minZ;
+			this.minW = minW;
+			this.maxX = maxX;
+			this.maxY = maxY;
+			this.maxZ = maxZ;
+			this.maxW = maxW;
+			this.uselessKey1 = 1.4;
+      		this.uselessKey2 = 1.4;
+      		this.uselessKey3 = 1.4;
+      		this.uselessKey4 = 1.4;
+      		this.uselessKey5 = 1.4;
+      		this.uselessKey6 = 1.4;
+      		this.uselessKey7 = 1.4;
+      		this.uselessKey8 = 1.4;
+      		this.uselessKey11 = 1.4;
+      		this.uselessKey12 = 1.4;
+      		this.uselessKey13 = 1.4;
+      		this.uselessKey14 = 1.4;
+      		this.uselessKey15 = 1.4;
+      		this.uselessKey16 = 1.4;
+      		this.uselessKey17 = 1.4;
+      		this.uselessKey18 = 1.4;
+		}
+
+		function testReuseConstructor(){
+			const results = new Array(tests);
+			const startTime = performance.now();
+			let rect = new Rectangle();
+			let x = 0.0;
+			let y = 0.0;
+			let z = 0.0;
+			let w = 0.0;
+			let inputIndex = 0;
+			for(let counter = 0; counter < tests; counter++){
+				rect = new Rectangle(input[inputIndex++], input[inputIndex++], input[inputIndex++], input[inputIndex++], input[inputIndex++], input[inputIndex++], input[inputIndex++], input[inputIndex++]);
+				x = input[inputIndex++];
+				y = input[inputIndex++];
+				z = input[inputIndex++];
+				w = input[inputIndex++];
+				if(x >= rect.minX && x <= rect.maxX && y >= rect.minY && y <= rect.maxY)
+					results[counter] = true;
+				else
+					results[counter] = false;
+			}
+			const endTime = performance.now();
+			return endTime - startTime;
+		}
+
+		function testArray(){
+			const results = new Array(tests);
+			const startTime = performance.now();
+			let inputIndex = 0;
+			for(let counter = 0; counter < tests; counter++){
+				const rect = [input[inputIndex++], input[inputIndex++], input[inputIndex++], input[inputIndex++], input[inputIndex++], input[inputIndex++], input[inputIndex++], input[inputIndex++]];
+				const x = input[inputIndex++];
+				const y = input[inputIndex++];
+				const z = input[inputIndex++];
+				const w = input[inputIndex++];
+				if(x >= rect[0] && x <= rect[4] && y >= rect[1] && y <= rect[5] && z >= rect[2] && z <= rect[6] && w >= rect[3] && w <= rect[7])
+					results[counter] = true;
+				else
+					results[counter] = false;
+			}
+			const endTime = performance.now();
+			return endTime - startTime;
+		}
+
+		function testReuseArray(){
+			const results = new Array(tests);
+			const startTime = performance.now();
+			let inputIndex = 0;
+			const rect = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+			for(let counter = 0; counter < tests; counter++){
+				rect[0] = input[inputIndex++];
+				rect[1] = input[inputIndex++];
+				rect[2] = input[inputIndex++];
+				rect[3] = input[inputIndex++];
+				rect[4] = input[inputIndex++];
+				rect[5] = input[inputIndex++];
+				rect[6] = input[inputIndex++];
+				rect[7] = input[inputIndex++];
+				const x = input[inputIndex++];
+				const y = input[inputIndex++];
+				const z = input[inputIndex++];
+				const w = input[inputIndex++];
+				if(x >= rect[0] && x <= rect[4] && y >= rect[1] && y <= rect[5] && z >= rect[2] && z <= rect[6] && w >= rect[3] && w <= rect[7])
+					results[counter] = true;
+				else
+					results[counter] = false;
+			}
+			const endTime = performance.now();
+			return endTime - startTime;
+		}
+	</script>
+</body>
+</html>
